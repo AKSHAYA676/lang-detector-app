@@ -4,7 +4,7 @@ import langdetect
 from langdetect import detect, detect_langs
 from langdetect.lang_detect_exception import LangDetectException
 import logging
-import streamlit as st
+
 
 app = Flask(__name__)
 CORS(app)
@@ -78,3 +78,4 @@ def health_check():
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
+
