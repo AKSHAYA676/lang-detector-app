@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Language Detector</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 30px auto;
+      padding: 30px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    textarea {
+      width: 100%;
+      padding: 15px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      resize: vertical;
+    }
+
+    .btn {
+      margin-top: 15px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background-color: #4facfe;
+      color: white;
+    }
+
+    .btn-secondary {
+      background-color: #f5f5f5;
+      color: #555;
+      margin-left: 10px;
+    }
+
+    .error {
+      margin-top: 15px;
+      color: red;
+    }
+
+    .result {
+      margin-top: 25px;
+      background: #f8f9fa;
+      padding: 15px;
+      border-left: 5px solid #4facfe;
+      border-radius: 8px;
+    }
+
+    .language-name {
+      font-weight: bold;
+      font-size: 1.2em;
+    }
+
+    .confidence {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🌐 AI Language Detector</h1>
+    <label for="textInput">Enter text:</label>
+    <textarea id="textInput" rows="6" placeholder="Type or paste your text here..."></textarea>
+    <div>
+      <button class="btn btn-primary" id="detectBtn">🔍 Detect Language</button>
+      <button class="btn btn-secondary" id="clearBtn">🗑️ Clear</button>
+    </div>
+
+    <div class="error" id="error"></div>
+    <div class="result" id="results" style="display:none;">
+      <div class="language-name" id="languageName"></div>
+      <div class="language-code" id="languageCode"></div>
+      <div class="confidence" id="confidenceList"></div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('detectBtn').addEventListener('click', async () => {
+      const text = document.getElementById('textInput').value.trim();
+      const errorBox = document.getElementById('error');
+      const results = document.getElementById('results');
+      const languageName = document.getElementById('languageName');
+      const languageCode = document.getElementById('languageCode');
+      const confidenceList = document.getElementById('confidenceList');
+
+      errorBox.textContent = '';
+      results.style.display = 'none';
+
+      if (!text || text.length < 3) {
+        errorBox.textContent = 'Please enter at least 3 characters.';
+        return;
+      }
+
+      try {
+        const response = await fetch('http://127.0.0.1:5000/api/detect', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: text })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          languageName.textContent = `Detected Language: ${data.detected_language.name}`;
+          languageCode.textContent = `Code: ${data.detected_language.code}`;
+          confidenceList.innerHTML = data.all_detections.map(d => 
+            `${d.language_name}: ${Math.round(d.confidence * 100)}%`
+          ).join('<br>');
+          results.style.display = 'block';
+        } else {
+          errorBox.textContent = data.error || 'Detection failed.';
+        }
+      } catch (err) {
+        console.error(err);
+        errorBox.textContent = 'Network error. Please check if the backend is running.';
+      }
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', () => {
+      document.getElementById('textInput').value = '';
+      document.getElementById('error').textContent = '';
+      document.getElementById('results').style.display = 'none';
+    });
+  </script>
+</body>
+</html>
