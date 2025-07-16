@@ -4,6 +4,7 @@ import langdetect
 from langdetect import detect, detect_langs
 from langdetect.lang_detect_exception import LangDetectException
 import logging
+import streamlit as st
 
 app = Flask(__name__)
 CORS(app)
